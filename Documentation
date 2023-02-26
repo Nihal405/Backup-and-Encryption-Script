@@ -1,0 +1,16 @@
+This script provides two functions to backup and encrypt a directory, and to decrypt and restore a previously backed up directory.
+The script takes command-line arguments to specify the directory to backup or restore, and the encryption key to use.
+
+The backup_and_encrypt function creates a backup directory with the suffix .backup appended to the original directory name. 
+It then copies the contents of the original directory to the backup directory.
+A new key is generated and saved to a file in the backup directory. 
+All files in the backup directory are encrypted using the key.
+
+The decrypt_and_restore function reads the key from the file in the backup directory and decrypts all files in the backup directory using the key. 
+The function then restores the backup directory to a new directory with the suffix .restore appended to the original directory name.
+
+The script uses the argparse module in Python to parse command-line arguments. 
+The script takes two required arguments: the directory to backup or restore, and the encryption key. 
+It also takes an optional flag -d or --decrypt to specify if the script should restore from a backup.
+
+Overall, this script provides a simple and secure way to backup and restore a directory with encryption.
