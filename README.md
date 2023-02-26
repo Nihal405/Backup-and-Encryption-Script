@@ -8,5 +8,7 @@ To use this script, you need to have Python 3 and the cryptography module instal
 You can run the script using the command-line interface. The script accepts the following arguments:
 
 directory: the directory to back up or restore.
+
 key: the encryption key.
+
 -d or --decrypt: an optional flag that specifies whether to restore from backup.
