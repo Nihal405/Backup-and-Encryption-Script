@@ -1,0 +1,74 @@
+import os
+import shutil
+import argparse
+from cryptography.fernet import Fernet
+
+def backup_and_encrypt(directory, key):
+    # Create a backup directory
+    backup_dir = directory + '.backup'
+    if os.path.exists(backup_dir):
+        shutil.rmtree(backup_dir)
+    os.makedirs(backup_dir)
+
+    # Copy the contents of the directory to the backup directory
+    shutil.copytree(directory, backup_dir)
+
+    # Generate a key and save it to a file
+    key_file = os.path.join(backup_dir, 'key.key')
+    cipher_key = Fernet.generate_key()
+    with open(key_file, 'wb') as f:
+        f.write(cipher_key)
+
+    # Encrypt all files in the backup directory using the key
+    fernet = Fernet(cipher_key)
+    for root, _, files in os.walk(backup_dir):
+        for file in files:
+            file_path = os.path.join(root, file)
+            with open(file_path, 'rb') as f:
+                original_data = f.read()
+            encrypted_data = fernet.encrypt(original_data)
+            with open(file_path, 'wb') as f:
+                f.write(encrypted_data)
+
+    print('Backup and encryption complete.')
+    return backup_dir
+
+def decrypt_and_restore(backup_dir, key):
+    # Read the key from the file
+    key_file = os.path.join(backup_dir, 'key.key')
+    with open(key_file, 'rb') as f:
+        cipher_key = f.read()
+
+    # Decrypt all files in the backup directory using the key
+    fernet = Fernet(cipher_key)
+    for root, _, files in os.walk(backup_dir):
+        for file in files:
+            file_path = os.path.join(root, file)
+            with open(file_path, 'rb') as f:
+                encrypted_data = f.read()
+            decrypted_data = fernet.decrypt(encrypted_data)
+            with open(file_path, 'wb') as f:
+                f.write(decrypted_data)
+
+    # Restore the backup
+    restore_dir = backup_dir.replace('.backup', '.restore')
+    if os.path.exists(restore_dir):
+        shutil.rmtree(restore_dir)
+    shutil.copytree(backup_dir, restore_dir)
+
+    print('Decryption and restore complete.')
+    return restore_dir
+
+if __name__ == '__main__':
+    # Define the command-line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('directory', help='The directory to back up or restore.')
+    parser.add_argument('key', help='The encryption key.')
+    parser.add_argument('-d', '--decrypt', action='store_true', help='Restore from backup.')
+    args = parser.parse_args()
+
+    # Run the appropriate function based on the command-line arguments
+    if args.decrypt:
+        decrypt_and_restore(args.directory, args.key)
+    else:
+        backup_and_encrypt(args.directory, args.key)
